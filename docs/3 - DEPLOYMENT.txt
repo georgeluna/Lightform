@@ -1,0 +1,41 @@
+QUALITY ASSURANCE
+---
+To ensure buggy changes aren't deployed in production, users may have a local environment that closely imitates the one in production that they can test against. But just because their code can run within their local test environment doesn't mean it will run in production. This is why it would be important to have some sort of Testing region hosted on the premises that reflects what's in production as closely as possible, where the developers can push their code to following thorough code reviews.
+
+In my company, when working with customers, the Testing region may or may not actually be a one-to-one snapshot of their Production region. This gives us the additional benefit of working with realistic test data (because it IS real data). This way, once the changes that are tested in the Testing region are determined to be stable, we can be confident that they will remain stable when deployed to the Production region.
+
+DEPLOYMENT METHODS
+---
+When I started out in web development, I usually had a rather straightforward process for deploying changes to a website. Deploying these changes would involved stopping the service that runs the website (Node.js or httpd) and pulling in the latest version of the code from a git repo, restarting the services once I am sure the latest code has been applied and associated dependencies have been updated.
+
+Now I'm aware that this is a rather manual process, so one thing I'd consider is containerizing the entire web application itself to ease deployment and configuration. I would probably use Docker to do this due to the sheer amount of support it has among both application deployment frameworks and cloud computing platforms. I would imagine that Docker could be easily be intergrated into a Jenkins-based workflow. Once pull requests are reviewed and merged into the master branch of the application, Jenkins could be configured to automatically build and deploy the latest version of the code as a container to a local Testing region, where the application would undergo QA testing before finally being deployed to production.
+
+FROM DEVELOPMENT TO DEPLOYMENT
+---
+Once the decision has been made to develop a new feature, the cycle from development to deployment would look like this:
+
+1. First thing that would be done is that the functional requirements for a feature would be outlined in a document as clearly and unambiguously as possible, and a meeting or two between the technical lead and the project manager may happen in order to discuss these functional requirements.
+2. Once the technical lead has assessed the functional requirements for the new feature and its potential impact across the whole application (for both new and existing data), he or she would research on what it will take to develop this new feature, including assessing new dependencies that may be needed as a result.
+3. At the point, the technical lead would be the one breaking ground on the project by setting up scaffolding (creating new routes, empty services, etc.) and bringing in new dependencies into the codebase.
+4. Depending on the approach the technical lead ultimately chooses to take, he or she may be able to break down the feature development into individual subfeatures or smaller modules and delegate them to one or more developers to work on simultaneously.
+5. It is expected that each subfeature that makes up the new feature overall can be individually unit-tested with several different test cases.
+6. Once developers finish development of their subfeature, they create a pull request for their code so that it can be code reviewed either by the technical lead or by a peer.
+7. The technical lead will handle all of the pull requests and finally merge together the different subfeatures to make up the new feature.
+8. Now that the new feature is put together, it can finally be deployed to the Testing region either as an individual module or part of the application. Here, QA engineers will test the new feature to ensure that it works in accordance to the specs outlined in the functional requirements document. Regression testing may be performed on the entire application to ensure the new feature has not negatively affected existing functionality.
+9. Once the new feature has passed QA testing, the application deployed to Testing can now be migrated into Production.
+
+READ-HEAVY SCALING
+---
+If I expect my system to be very read-heavy, I would definitely want reads to be as fast as possible. First thing I'd try to do is assess the possibility of having the entire database run within memory as opposed to secondary storage. Unfortunately databases tend to be HUGE (potentially in the terabytes or more), so the next best thing would be to ensure that our database has decent indexes to properly speed up operations.
+
+An even better approach would be to devise some sort of caching mechanism so that the results of commonly-performed queries can remain resident within memory and eliminate potentially expensive database calls. As with all caching systems, we need to ensure that we have mechanisms that will evict old, unused items and free up resources, as well as invalidate cache entries once they go stale. These can be very tricky to implement properly.
+
+Redis and Memcached are two popular systems that are used to implement such caching mechanisms.
+
+WRITE-HEAVY SCALING
+---
+There are several approaches I could take to ensure that writes go as quickly as possible.
+
+1. Faster hardware: SSDs are much faster for writing than standard HDDs.
+2. Bulk/batch writing whenever possible potentially avoids the overhead of having to establish a connection to the database with each query performed. Of course, this is why connection pooling exists.
+3. Some sort of sharding that allows a database to horizontally scale and be distributed across multiple machines.

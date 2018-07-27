@@ -1,0 +1,108 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Lightform",
+		"_postman_id": "7e334070-a1fc-f1f0-07cf-b27d64745227",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "AddDevice",
+			"request": {
+				"url": "http://localhost:8080/api/device",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"hostname\": \"ORGDEV8\",\r\n\t\"model\": \"LF1\",\r\n\t\"serial\": \"LF1DXC21235\",\r\n\t\"orgid\": \"1\"\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GetAllDevices",
+			"request": {
+				"url": {
+					"raw": "http://localhost:8080/api/device?orgid=1&page=0",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"device"
+					],
+					"query": [
+						{
+							"key": "orgid",
+							"value": "1",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "page",
+							"value": "0",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "AssignDevice",
+			"request": {
+				"url": "http://localhost:8080/api/device/4/assign",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"userid\": \"5\",\r\n\t\"orgid\": \"1\",\r\n\t\"access\": \"0\"\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "UnassignDevice",
+			"request": {
+				"url": "http://localhost:8080/api/device/4/unassign",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"userid\": \"5\"\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

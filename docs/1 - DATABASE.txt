@@ -1,0 +1,138 @@
+To fulfill the design goals of this coding exercise for designing a system that will allow us to keep track and manage devices that are sold to customers/organizations, the database design will be kept very barebones and simple.
+
+TABLES
+===
+
+ORGANIZATIONS
+---
+
+At the highest level, "Organizations" will represent all of the entities that have bought one or more devices (kinda like what you'd expect to see in a CRM system). Each organization entry can represent either an entire organization altogether, or an individual customer.
+
+The table that will hold the organizations could consist of the following columns:
+
+	ID (id): a numerical, auto-incrementing unique ID that pertains to an organization entered into our system. This will be the primary key referenced by other tables.
+	
+	Name (name): This is a string that could either represent the name of the organization or the full name of the customer that has bought a device. Initially I thought we could make enforce a unique constraint on this if we were only going to hold organization names, but if individual customers can be represented by an entry in the organizations table, then obviously we want to take the possibility of multiple customers with the exact same name into account.
+	
+Here's the sql statement for such a table:
+
+	CREATE TABLE `organizations` (
+	  `id` int(11) NOT NULL AUTO_INCREMENT,
+	  `name` varchar(255) NOT NULL,
+	  PRIMARY KEY (`id`)
+	) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+We could also add other columns that could describe the organization, such as Address, City, State, Zipcode, Phone number, etc.
+
+USERS
+---
+
+Each organization can have one or more users under it. Now I imagine that each of these users will be able to perform organization-level actions (such as adding/removing devices and being able to assign/unassign them to other users).
+
+The table that will hold these users could consist of the following columns:
+
+	ID (id): a numerical, auto-incrementing unique ID that represents this user. This will be the primary key referenced by other tables.
+	
+	Username (username): Unique string that represents the username (or nickname) that this user might use to access this system.
+	
+	Last Name (lastname): User's last name (optional)
+	
+	First Name (firstname): User's first name (optional)
+	
+	Organization ID (org_id): The unique ID of the organization that this user pertains to. This will have a foreign key constraint applied to it to ensure that users can only be associated with an existing organization.
+	
+	Access Level (access): This would be an integer that represents the level of access the user has to an organization when they are logged in. We could devise an access control scheme that's similar to this:
+		0 - Owner: The "owner" of an organization who has all abilities, plus additional organization-level abilities (such as billing). Could also be the only one with the ability to add or remove users from their organization.
+		1 - Administrator: User is able to add, remove, or remain devices from their organization.
+		2 - Standard User: Just a standard user with no special abilites.
+
+Here's the sql statement for such a table:
+
+	CREATE TABLE `users` (
+	  `id` int(11) NOT NULL AUTO_INCREMENT,
+	  `username` varchar(255) NOT NULL,
+	  `lastname` varchar(255) DEFAULT NULL,
+	  `firstname` varchar(255) DEFAULT NULL,
+	  `org_id` int(11) NOT NULL,
+	  `access` int(1) NOT NULL DEFAULT '0',
+	  PRIMARY KEY (`id`),
+	  UNIQUE KEY `username_UNIQUE` (`username`),
+	  KEY `org_id_idx` (`org_id`),
+	  CONSTRAINT `FK_USR_ORG_ID` FOREIGN KEY (`org_id`) REFERENCES `organizations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+	) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+Note that I've excluded other information that would typically go with such a user system, such as hashed passwords, email, etc.
+
+DEVICES
+---
+
+Each organization can have a set of Devices associated with it. Now I am assuming that this management system pertains to IoT, IP-enabled devices that users would be able to handle remotely via a control panel.
+
+The table that will hold all of the devices registered in the service would consist of the following columns:
+
+	ID (id): numerical, auto-incrementing unique ID
+	
+	Hostname (hostname): The hostname of the device as it would appear within a network. It is assumed that this would be unique to a particular organization.
+	
+	Organization ID (org_id): The unique ID of the organization that this device pertains to. Like with users, this one also has a foreign key constraint.
+	
+	Model Number (model): String that holds the model/part number that pertains to the device.
+	
+	Serial Number (serial): String that holds the serial number that pertains to the device. This is presumably unique.
+
+Here's the sql statement for such a table:	
+
+	CREATE TABLE `devices` (
+	  `id` int(11) NOT NULL AUTO_INCREMENT,
+	  `hostname` varchar(255) NOT NULL,
+	  `org_id` int(11) NOT NULL,
+	  `model` varchar(255) DEFAULT NULL,
+	  `serial` varchar(255) DEFAULT NULL,
+	  PRIMARY KEY (`id`),
+	  UNIQUE KEY `serial_UNIQUE` (`serial`),
+	  KEY `FK_ORG_ID_idx` (`org_id`),
+	  CONSTRAINT `FK_DEV_ORG_ID` FOREIGN KEY (`org_id`) REFERENCES `organizations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+	) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+From a design point of view, I can already see several improvements that I could make for devices within such a system. If desired, we could definitely utilize the serial number as the primary key since we presume that these will always be unique (a device won't exist in two organizations at once). Of course, we will keep using a numerical ID to ensure that the index is maintained in sequential order for performance reasons.
+
+Rather than storing related information about a particular model within this table, we can create a separate table that will hold all of the different models that our service will provide to customers, along with information about that model (name, long description, price, etc.).
+
+ASSIGNMENTS
+---
+
+As part of the requirements, a device can be associated with zero or more users. I interpret this as meaning that before a user within an organization can use a device, it must be assigned to them. And if we want to allow users to be able to use multiple devices, then it would be appropriate to create a separate associative (junction) table that will represent this many-to-many relationship between devices and users.
+
+I also assume that it is expected that we should be able to control how a particular user can use a device, so if I were to implement an access control scheme similar to the one provided at the user level, then I would implement it within this table.
+
+The table that will hold all of the users assigned to a device would consist of the following columns:
+
+	Device ID (device_id): The device of the current assignment that pertains to a device (foreign key to the Devices table).
+	
+	User ID (user_id): The user that has been assigned this device (foreign key to the Users table).
+	
+	Organization ID (org_id): The organization that both devices and users pertain to (foreign key to the Organizations table).
+	
+	Access Level (access): This would be an integer that represents the level of access (or control) a particular user has over an individual device. We could devise an access control scheme that's similar to this:
+		0 - Full Control: The user will be able to have full read/write/remote management control over this particular device, including the hardware itself (turn on/off/reboot/update).
+		1 - Write: The user will be able to push new content that will be shown from the device (e.g. new patterns).
+		2 - Read: The user would only be able to play/toggle existing content that has already been uploaded to the device.
+	
+Here's the sql statement for such a table:
+
+	CREATE TABLE `assignments` (
+	  `device_id` int(11) NOT NULL,
+	  `user_id` int(11) NOT NULL,
+	  `org_id` int(11) DEFAULT NULL,
+	  `access` int(1) DEFAULT '0',
+	  PRIMARY KEY (`device_id`,`user_id`),
+	  KEY `FK_ASG_USR_ID_idx` (`user_id`),
+	  KEY `FK_ASG_ORG_ID_idx` (`org_id`),
+	  CONSTRAINT `FK_ASN_DEV_ID` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+	  CONSTRAINT `FK_ASN_ORG_ID` FOREIGN KEY (`org_id`) REFERENCES `organizations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+	  CONSTRAINT `FK_ASN_USR_ID` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+	) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+	
+I should mention that it's not strictly necessary to have an org_id foreign key here since that would essentially de-normalize the table. However, the benefit of having this column would be that we wouldn't need to perform another join to get the organization that a particular assignment pertains to.
+
+If we choose to use the serial number as a device's unique id, then we will have to update this table to reflect that change.

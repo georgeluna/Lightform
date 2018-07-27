@@ -1,0 +1,21 @@
+First of all, I'd like to disclose that this assignment is strikingly similar to a solution provided within the latest versions of my previous company's mobile-based work management system that I helped develop. Let me go ahead and give a little bit of background on how this system worked.
+
+WORK MANAGEMENT SYSTEM
+===
+This work management system allows supervisors to assign work tasks to mechanics, who would be able to check them out digitally onto a tablet device, with all necessary documents and information available to them offline while out in the field. As such, we provided a system that allows them to manage devices within their organization.
+
+ASSIGNMENTS
+---
+Customers within the energy industry tend to split up their organization into individual Facilities (or Sites). Within a facility, there exist work order tasks that are created and reviewed by a planner user (PLANNER role). Once a work order task is finally handed off from the planner to a supervisor (SUPERVISOR role) within our work management system, they are given access to a panel that allows them to assign the following to a task:
+
+1. Mechanic - The user who will actually go out into the field and perform work on this task (MECHANIC role).
+2. Crew - A group of mechanics.
+3. Device - An individual device that is available within this particular facility.
+
+CHECKOUT
+---
+Once the supervisor has provided an assignment to this task, it will show up on the task list on the devices of all mechanics that these assignments pertain to, available to check out and download to their device. Tasks can be assigned to individual mechanics, a crew, or a device. An advantage of assigning a task to a device is that the task will be available to any user who uses this device in the field if the exact mechanics or crews cannot be anticipated ahead of time.
+
+DEVICE MANAGEMENT
+---
+Users assigned to the ADMINISTRATOR role for their facility are given access to a control panel that allows them to add or remove a particular device by its unique hostname within the organization. If a device is to be rotated to another facility, the administrator must log into the device control panel and change the facility that the device pertains to. This action can only be performed if a device is not currently checked out by a mechanic. Once this happens, all of the task assignments that explicitly pertain to that device will be dropped from all work order tasks (since each task pertains to a facility).
