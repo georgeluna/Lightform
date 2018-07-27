@@ -1,4 +1,4 @@
-If I were designing an API, I think one of the first things I would make sure I have nailed down properly are authentication and authorization. One way I've handled authentication in the past for specific routes is by using encrypted access tokens that would be given to the client once they have confirmed their identity. The server will then expect a x-access-token header containing this token on each request made to it, which will be decrypted and verified before each request if performed. If the token is invalid and/or expired, then any request sent to authenticated routes shall be rejected with a 401 Unauthorized error. If the access token IS valid, but the user does not have the authorization to access a particular route/piece of data (via access control like the ones I've described in the database section), then I'll go ahead and throw a 403 Forbidden error.
+If I were designing an API, I think one of the first things I would make sure I have nailed down properly are authentication and authorization. One way I've handled authentication in the past for specific routes is by using encrypted access tokens that would be given to the client once they have confirmed their identity. The server will then expect a x-access-token header containing this token on each request made to it, which will be decrypted and verified before each request is performed. If the token is invalid and/or expired, then any request sent to authenticated routes shall be rejected with a 401 Unauthorized error. If the access token IS valid, but the user does not have the authorization to access a particular route/piece of data (via access control like the ones I've described in the database section), then I'll go ahead and throw a 403 Forbidden error.
 
 For the purposes of this assignment, I'll go ahead and forego authentication/authorization considerations and assume the client I am using already sends the typical headers with each request it makes (Host, User-Agent, Accept, etc).
 
@@ -59,7 +59,7 @@ Once we have verified that we have all of the data we need from the body, we can
 
 Where ? is the list of values from the JSON object.
 
-We may take some extra steps to not only verify that the user pertains to the organization they sent in the body, but also if they have permission within that organization to even add new devices. We might also catch whether or not we are trying to add a duplicate device to the organization (access level). In any of these cases, we would throw some sort of 4xx error to indicate that the request has failed, as well as returning any relevant data.
+We may take some extra steps to not only verify that the user pertains to the organization they sent in the body, but also if they have permission within that organization to even add new devices. We might also catch whether or not we are trying to add a duplicate device to the organization (access level). In any of these cases, we would throw some sort of 4xx error to indicate that the request has failed, as well as returning any relevant debug data to help explain why the request failed.
 
 If all goes well, then we shall receive a response with the following data:
 
@@ -205,7 +205,7 @@ In my previous position, I realized the importance of having a stable API by ass
 
 VERSIONING
 ---
-The easiest thing to do might be developing some sort of versioning scheme that indicates the API version that a particular client is still using. This can either be done via a query parameter or a custom header on each request. This way we can let the application handle previous versions of an API as we please, or if future versions deprecated a particular web service that a route points to, reject the request.
+The easiest thing to do might be developing some sort of versioning scheme that indicates the API version that a particular client is still using. This can either be done via a query parameter, a custom header on each request, or as part of the body data. This way we can let the application handle previous versions of an API as we please, or if future versions deprecated a particular web service that a route points to, reject the request.
 
 Though it could also be even easier to reject requests intended for old API versions altogether and force the client to update their application to the latest version.
 
@@ -213,12 +213,13 @@ GROWING DATA
 ---
 I would anticipate that, over time, web services will be returning more data as the API changes to accomodate for new data fields and as the system itself is populated with even more data.
 
-For the latter, the first thing that comes to mind is pagination. There's no reason why we have to return ALL of the data at once. Similar to my GetAllDevices web service, we can provide a query parameter for the current page, as well as another parameter for the number of rows to return. That way, clients won't be overwhelmed with large amounts of data.
+For the latter, the first thing that comes to mind is pagination. There's no reason why we have to return ALL of the data at once. Similar to my GetAllDevices web service, we can provide a query parameter for the current page, as well as another parameter for the number of rows to return. This way, clients won't be overwhelmed with large amounts of data all at once and can comfortably navigate through it page-by-page.
 
-Additionally, we can leave the burden to the client of deciding which data they want to display. For example, rather than returning all the columns that we THINK the client will want, we can let them send query parameters that indicate the exact data they expect to be returned by the web service. This could be useful when displaying tabulated data, and the client wants the ability to hide particular columns.
+Additionally, we can leave the burden to the client of deciding which data they want to display. For example, rather than returning all the columns that we THINK the client will want, we can let them send query parameters that indicate the exact data they expect to be returned by the web service. This could be useful when displaying tabulated data, if the client is to have the ability to hide particular columns to prevent the screen from being too cluttered.
 
 STACK OF CHOICE
 ---
-I would not want to limit myself to a particular stack when developing web services, because I know that different sets of technologies have different benefits.
+In general I think consistency is important when developing a system, and using a single technology will definitely be good for code maintainability. However, I would not want to limit myself to a particular stack when developing web services, because I know that different sets of technologies have different benefits that can come together as a very effective solution.
 
-I admit, I really like the idea of Node.js being Javascript-based since it is relatively easier to pick up than another language like Java. However, I would definitely choose Java if I expect to provide services that are more than just simply proceesing requests to a database. If I expect to provide services that might involve something that is more computationally intensive (image/video processing for example), then I would imagine that I would create an API that runs through a Java servlet that gives me access to all of the libraries that are readily accessible from such a battle-tested backend language. Even better, the Java language provides easier facilites on developing multithreaded applications vs. Node.js's workers.
+I admit, I really like the idea of building a backend system entirely in Node.js since it is relatively easier to pick up Javascript than another language like Java. However, I would definitely choose Java if I expect to provide services that are more than just simply proceesing requests to a database. If I expect to provide services that might involve something that is more computationally intensive (image/video processing for example), then I would imagine that I could create an API that runs through a Java servlet that gives me access to all of the libraries that are readily accessible from such a battle-tested backend language. Even better, the Java language provides easier facilites on developing multithreaded applications vs. Node.js's workers, so Java applications could potentially scale vertically better than Node.js ones.
+

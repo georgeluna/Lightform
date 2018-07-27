@@ -31,3 +31,12 @@ cd server
 node lightform-server
 
 By default, the website will run on http://localhost:8080
+
+### Testing
+
+There is a JSON file in the ./requests folder that can be imported into Postman in order to test the following web services:
+
+- AddDevice
+- GetAllDevices
+- AssignDevice
+- UnassignDevice

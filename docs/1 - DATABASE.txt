@@ -12,7 +12,9 @@ The table that will hold the organizations could consist of the following column
 
 	ID (id): a numerical, auto-incrementing unique ID that pertains to an organization entered into our system. This will be the primary key referenced by other tables.
 	
-	Name (name): This is a string that could either represent the name of the organization or the full name of the customer that has bought a device. Initially I thought we could make enforce a unique constraint on this if we were only going to hold organization names, but if individual customers can be represented by an entry in the organizations table, then obviously we want to take the possibility of multiple customers with the exact same name into account.
+	Name (name): This is a string that could either represent the name of the organization or the full name of the customer that has bought a device.
+	
+Initially I thought we could enforce a unique constraint on the name of an organization if we were only going to hold organization names, but if individual customers can be represented by an entry in the organizations table, then obviously we want to take the possibility of multiple customers with the exact same name into account.
 	
 Here's the sql statement for such a table:
 
@@ -96,7 +98,7 @@ Here's the sql statement for such a table:
 
 From a design point of view, I can already see several improvements that I could make for devices within such a system. If desired, we could definitely utilize the serial number as the primary key since we presume that these will always be unique (a device won't exist in two organizations at once). Of course, we will keep using a numerical ID to ensure that the index is maintained in sequential order for performance reasons.
 
-Rather than storing related information about a particular model within this table, we can create a separate table that will hold all of the different models that our service will provide to customers, along with information about that model (name, long description, price, etc.).
+In addition to this, rather than storing related information about a particular model within this table, we can create a separate table that will hold all of the different models that our service will provide to customers, along with information about that model (name, long description, price, etc.).
 
 ASSIGNMENTS
 ---
@@ -133,6 +135,6 @@ Here's the sql statement for such a table:
 	  CONSTRAINT `FK_ASN_USR_ID` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 	) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 	
-I should mention that it's not strictly necessary to have an org_id foreign key here since that would essentially de-normalize the table. However, the benefit of having this column would be that we wouldn't need to perform another join to get the organization that a particular assignment pertains to.
+I should mention that it's not strictly necessary to have an org_id foreign key here since that would essentially de-normalize the table. However, the benefit of having this column would be that we wouldn't need to perform another join to get the organization that a particular assignment pertains to, giving us a slight performance boost.
 
 If we choose to use the serial number as a device's unique id, then we will have to update this table to reflect that change.
